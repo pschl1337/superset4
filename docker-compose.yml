@@ -27,6 +27,12 @@ x-superset-volumes: &superset-volumes
   - superset_home:/app/superset_home
   - ./tests:/app/tests
 
+x-common-build: &common-build
+  context: .
+  target: dev
+  cache_from:
+    - apache/superset-cache:3.9-slim-bookworm
+
 version: "4.0"
 services:
   nginx:

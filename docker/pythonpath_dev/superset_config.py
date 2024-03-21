@@ -134,3 +134,5 @@ THEME_OVERRIDES = {
    }
    }
 }
+
+FAB_API_SWAGGER_UI = True
