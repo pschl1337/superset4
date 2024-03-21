@@ -27,7 +27,7 @@ x-superset-volumes: &superset-volumes
   - superset_home:/app/superset_home
   - ./tests:/app/tests
 
-version: "3.8"
+version: "4.0"
 services:
   nginx:
     image: nginx:latest
