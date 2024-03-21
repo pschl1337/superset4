@@ -113,3 +113,14 @@ try:
     )
 except ImportError:
     logger.info("Using default Docker config...")
+
+secret: |
+  SECRET_KEY = 'C1E65bWGVJXiLjo6lBe816LDYVNbP06e1kdBxjKdCoM='
+superset_enable_cache: "True"
+superset_cache_config: |
+  {
+    'CACHE_TYPE': 'redis',
+    'CACHE_KEY_PREFIX': 'superset_results',
+    'CACHE_REDIS_URL': 'redis://localhost:6379/0'
+  }
+superset_cache_default_timeout: "60 * 60 * 24"
