@@ -124,3 +124,17 @@ superset_cache_config: |
     'CACHE_REDIS_URL': 'redis://localhost:6379/0'
   }
 superset_cache_default_timeout: "60 * 60 * 24"
+  THEME_OVERRIDES = {
+   "borderRadius": 4,
+   "colors": {
+     "primary": {
+       "base": 'red',
+     },
+     "secondary": {
+       "base": 'green',
+     },
+     "grayscale": {
+       "base": 'orange',
+     }
+   }
+   }
