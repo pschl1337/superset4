@@ -62,6 +62,11 @@ services:
   superset:
     env_file: docker/.env
     image: *superset-image
+    deploy:
+      ressources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
     container_name: superset_app
     command: ["/app/docker/docker-bootstrap.sh", "app"]
     restart: unless-stopped
@@ -108,6 +113,11 @@ services:
 
   superset-init:
     image: *superset-image
+    deploy:
+      ressources:
+        limits:
+          cpus: '4.0'
+          memory: 8G    
     container_name: superset_init
     command: ["/app/docker/docker-init.sh"]
     env_file: docker/.env
@@ -121,6 +131,11 @@ services:
 
   superset-node:
     image: node:16
+    deploy:
+      ressources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
     container_name: superset_node
     command: ["/app/docker/docker-frontend.sh"]
     env_file: docker/.env
@@ -131,6 +146,11 @@ services:
 
   superset-worker:
     image: *superset-image
+    deploy:
+      ressources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
     container_name: superset_worker
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
     env_file: docker/.env
