@@ -104,6 +104,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_SSL=false
+      - JWT_SECRET='C1E65bWGVJXiLjo6lBe816LDYVNbP06e1kdBxjKdCoM='
 
   superset-init:
     image: *superset-image
