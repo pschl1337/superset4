@@ -122,7 +122,7 @@ services:
     environment:
       CYPRESS_CONFIG: "${CYPRESS_CONFIG}"
     healthcheck:
-      disable: true
+      disable: false
 
   superset-node:
     image: node:16
