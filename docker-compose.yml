@@ -112,12 +112,7 @@ services:
       - JWT_SECRET='C1E65bWGVJXiLjo6lBe816LDYVNbP06e1kdBxjKdCoM='
 
   superset-init:
-    image: *superset-image
-    deploy:
-      resources:
-        limits:
-          cpus: '4.0'
-          memory: 8G    
+    image: *superset-image 
     container_name: superset_init
     command: ["/app/docker/docker-init.sh"]
     env_file: docker/.env
@@ -131,11 +126,6 @@ services:
 
   superset-node:
     image: node:16
-    deploy:
-      resources:
-        limits:
-          cpus: '4.0'
-          memory: 8G
     container_name: superset_node
     command: ["/app/docker/docker-frontend.sh"]
     env_file: docker/.env
@@ -146,11 +136,6 @@ services:
 
   superset-worker:
     image: *superset-image
-    deploy:
-      resources:
-        limits:
-          cpus: '4.0'
-          memory: 8G
     container_name: superset_worker
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
     env_file: docker/.env
