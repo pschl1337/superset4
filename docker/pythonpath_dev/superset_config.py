@@ -114,27 +114,24 @@ try:
 except ImportError:
     logger.info("Using default Docker config...")
 
-secret: |
-  SECRET_KEY = 'C1E65bWGVJXiLjo6lBe816LDYVNbP06e1kdBxjKdCoM='
-superset_enable_cache: "True"
-superset_cache_config: |
+SECRET_KEY = 'C1E65bWGVJXiLjo6lBe816LDYVNbP06e1kdBxjKdCoM='
+FILTER_STATE_CACHE_CONFIG = |
   {
     'CACHE_TYPE': 'redis',
     'CACHE_KEY_PREFIX': 'superset_results',
     'CACHE_REDIS_URL': 'redis://localhost:6379/0'
   }
-superset_cache_default_timeout: "60 * 60 * 24"
-  THEME_OVERRIDES = {
-   "borderRadius": 4,
-   "colors": {
-     "primary": {
-       "base": 'red',
-     },
-     "secondary": {
-       "base": 'green',
-     },
-     "grayscale": {
-       "base": 'orange',
-     }
+THEME_OVERRIDES = {
+ "borderRadius": 4,
+ "colors": {
+   "primary": {
+     "base": 'red',
+   },
+   "secondary": {
+     "base": 'green',
+   },
+   "grayscale": {
+     "base": 'orange',
    }
    }
+}
