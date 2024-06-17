@@ -35,7 +35,7 @@ runAsUser: 0
 serviceAccountName: ~
 serviceAccount:
   # -- Create custom service account for Superset. If create: true and serviceAccountName is not provided, `superset.fullname` will be used.
-  create: false
+  create: true
   annotations: {}
 
 # -- Install additional packages and do any other bootstrap configuration in this script
@@ -43,7 +43,11 @@ serviceAccount:
 # @default -- see `values.yaml`
 bootstrapScript: |
   #!/bin/bash
-  if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
+  rm -rf /var/lib/apt/lists/* && \   pip install \    
+          databricks-dbapi \     pymssql==2.2.7 \     psycopg2-binary==2.9.1
+          \     mysqlclient==2.1.0 \     redis==3.5.3 && \   if [ ! -f
+          ~/bootstrap ]; then echo "Running Superset with uid {{
+          .Values.runAsUser }}" > ~/bootstrap; fi
 
 # -- The name of the secret which we will use to generate a superset_config.py file
 # Note: this secret must have the key superset_config.py in it and can include other files as well
@@ -56,7 +60,9 @@ envFromSecret: '{{ template "superset.fullname" . }}-env'
 envFromSecrets: []
 
 # -- Extra environment variables that will be passed into pods
-extraEnv: {}
+extraEnv: {
+  SUPERSET_FEATURE_EMBEDDED_SUPERSET: true
+}
   # Different gunicorn settings, refer to the gunicorn documentation
   # https://docs.gunicorn.org/en/stable/settings.html#
   # These variables are used as Flags at the gunicorn startup
@@ -503,7 +509,7 @@ supersetWorker:
     replicaCount: 3
   autoscaling:
     enabled: true
-    minReplicas: 2
+    minReplicas: 3
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
@@ -966,7 +972,8 @@ postgresql:
       enabled: true
       ##
       ## Persistent class
-      # storageClass: classname
+      storageClass: pg-storage
+      mountPath: $HOME/postgresql
       ##
       ## Access modes:
       accessModes:
