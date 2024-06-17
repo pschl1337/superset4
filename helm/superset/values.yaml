@@ -97,7 +97,7 @@ extraSecretEnv: {}
   #  SUPERSET_SECRET_KEY: 'CHANGE_ME_TO_A_COMPLEX_RANDOM_SECRET'
 
 # -- Extra files to mount on `/app/pythonpath`
-extraConfigs: {}
+extraConfigs: {
   # import_datasources.yaml: |
   #     databases:
   #     - allow_file_upload: true
@@ -109,13 +109,20 @@ extraConfigs: {}
   #         }"
   #       sqlalchemy_uri: example://example-db.local
   #       tables: []
+  # -- Extra files to mount on `/app/pythonpath` as secrets
   superset_config.py:
     PREVENT_UNSAFE_DB_CONNECTIONS = False
-
-# -- Extra files to mount on `/app/pythonpath` as secrets
+}
 extraSecrets: {}
 
-extraVolumes: []
+#extraVolumes:
+#  - name: superset-pythonpath
+#    persistentVolumeClaim:
+#      claimName: superset-pvc-pythonpath
+#  - name: superset-configs
+#    persistentVolumeClaim:
+#      claimName: superset-pvc-configs
+
   # - name: customConfig
   #   configMap:
   #     name: '{{ template "superset.fullname" . }}-custom-config'
@@ -124,7 +131,12 @@ extraVolumes: []
   #     secretName: my-secret
   #     defaultMode: 0600
 
-extraVolumeMounts: []
+#extraVolumeMounts:
+#  - name: superset-pythonpath
+#    mountPath: /app/pythonpath
+#  - name: superset-configs
+#    mountPath: /app/config
+
   # - name: customConfig
   #   mountPath: /mnt/config
   #   readOnly: true
@@ -134,27 +146,7 @@ extraVolumeMounts: []
 # -- A dictionary of overrides to append at the end of superset_config.py - the name does not matter
 # WARNING: the order is not guaranteed
 # Files can be passed as helm --set-file configOverrides.my-override=my-file.py
-configOverrides: { 
-  secret: |
-    # Generate your own secret key for encryption. Use `openssl rand -base64 42` to generate a good key
-    SECRET_KEY = 'ZPndWPS5IP+oU+uoRpGnXL1ErC5tqSJPuNTlfOPPxevcw5jYVwjwEXyH'
-  feature_flags: |
-    import ast
-
-    FEATURE_FLAGS = {
-        "ALERT_REPORTS": True,
-        "DYNAMIC_PLUGINS": True,
-        "ALERTS_ATTACH_REPORTS": True,
-        "DASHBOARD_RBAC": True,
-        "EMBEDDABLE_CHARTS": True,
-        "EMBEDDED_SUPERSET": True,
-        "ENABLE_TEMPLATE_PROCESSING": True,
-        "LISTVIEWS_DEFAULT_CARD_VIEW": True,
-        "SCHEDULED_QUERIES": True,
-        "SQL_VALIDATORS_BY_ENGINE": True,
-        "THUMBNAILS": True
-    }
-}
+configOverrides: 
   # extend_timeout: |
   #    # Extend timeout to allow long running queries.
   #    SUPERSET_WEBSERVER_TIMEOUT = ...
@@ -186,9 +178,54 @@ configOverrides: {
   #   AUTH_USER_REGISTRATION = True
   #   # The default user self registration role
   #   AUTH_USER_REGISTRATION_ROLE = "Admin"
-  # secret: |
-  #   # Generate your own secret key for encryption. Use `openssl rand -base64 42` to generate a good key
-  #   SECRET_KEY = 'CHANGE_ME_TO_A_COMPLEX_RANDOM_SECRET'
+
+  secret: |
+    # Generate your own secret key for encryption. Use `openssl rand -base64 42` to generate a good key
+    SECRET_KEY = 'ZPndWPS5IP+oU+uoRpGnXL1ErC5tqSJPuNTlfOPPxevcw5jYVwjwEXyH'
+  feature_flags: |
+    import ast
+
+    FEATURE_FLAGS = {
+        "ALERT_REPORTS": True
+    }
+
+  celery_conf: |
+    from celery.schedules import crontab
+
+    class CeleryConfig:
+      broker_url = f"redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/0"
+      imports = (
+          "superset.sql_lab",
+          "superset.tasks.cache",
+          "superset.tasks.scheduler",
+      )
+      result_backend = f"redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/0"
+      task_annotations = {
+          "sql_lab.get_sql_results": {
+              "rate_limit": "100/s",
+          },
+      }
+      beat_schedule = {
+          "reports.scheduler": {
+              "task": "reports.scheduler",
+              "schedule": crontab(minute="*", hour="*"),
+          },
+          "reports.prune_log": {
+              "task": "reports.prune_log",
+              'schedule': crontab(minute=0, hour=0),
+          },
+          'cache-warmup-hourly': {
+              "task": "cache-warmup",
+              "schedule": crontab(minute="*/30", hour="*"),
+              "kwargs": {
+                  "strategy_name": "top_n_dashboards",
+                  "top_n": 10,
+                  "since": "7 days ago",
+              },
+          }
+      }
+
+    CELERY_CONFIG = CeleryConfig
 
 # -- Same as above but the values are files
 configOverridesFiles: {}
@@ -196,8 +233,62 @@ configOverridesFiles: {}
   # enable_oauth: enable_oauth.py
 
 configMountPath: "/app/pythonpath"
-
 extraConfigMountPath: "/app/configs"
+
+# persistence:
+#   enabled: true
+#   config:
+#     existingClaim: superset-config-pvc
+#   pythonpath:
+#     existingClaim: superset-pythonpath-pvc
+#   images:
+#     existingClaim: superset-images-pvc
+
+# extraContainers:
+#   - name: init-config
+#     image: busybox
+#     command: ['sh', '-c', 'cp -r /mnt/superset_config/* /app/pythonpath/']
+#     volumeMounts:
+#       - name: pythonpath-volume
+#         mountPath: /app/pythonpath
+#       - name: init-config-volume
+#         mountPath: /mnt/superset_config
+#   - name: init-extra-config
+#     image: busybox
+#     command: ['sh', '-c', 'cp -r /mnt/superset_extra_config/* /app/configs/']
+#     volumeMounts:
+#       - name: config-volume
+#         mountPath: /app/configs
+#       - name: init-extra-config-volume
+#         mountPath: /mnt/superset_extra_config
+#   - name: init-images
+#     image: busybox
+#     command: ['sh', '-c', 'cp -r /mnt/superset_images/* /app/images/']
+#     volumeMounts:
+#       - name: images-volume
+#         mountPath: /app/images
+#       - name: init-images-volume
+#         mountPath: /mnt/superset_images
+
+# extraVolumes:
+#   - name: init-config-volume
+#     hostPath:
+#       path: /mnt/data/superset/config
+#   - name: init-extra-config-volume
+#     hostPath:
+#       path: /mnt/data/superset/extra/config
+#   - name: init-images-volume
+#     hostPath:
+#       path: /mnt/data/superset/images
+#   - name: config-volume
+#     persistentVolumeClaim:
+#       claimName: superset-pvc-config
+#   - name: pythonpath-volume
+#     persistentVolumeClaim:
+#       claimName: superset-pvc-pythonpath
+#   - name: images-volume
+#     persistentVolumeClaim:
+#       claimName: superset-images-pvc
 
 image:
   repository: apachesuperset.docker.scarf.sh/apache/superset
@@ -263,13 +354,23 @@ hostAliases: []
 
 # Superset node configuration
 supersetNode:
-  replicaCount: 3
+  replicas:
+    enabled: true
+    replicaCount: 3
   autoscaling:
     enabled: true
     minReplicas: 1
-    maxReplicas: 100
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
+  # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetNode pods
+  podDisruptionBudget:
+    # -- Whether the pod disruption budget should be created
+    enabled: false
+    # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    minAvailable: 1
+    # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    maxUnavailable: 1
 
   # -- Startup command
   # @default -- See `values.yaml`
@@ -277,7 +378,6 @@ supersetNode:
     - "/bin/sh"
     - "-c"
     - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; /usr/bin/run-server.sh"
-    - "apt update && apt install nano"
   connections:
     # -- Change in case of bringing your own redis and then also set redis.enabled:false
     redis_host: '{{ .Release.Name }}-redis-headless'
@@ -285,7 +385,7 @@ supersetNode:
     redis_user: ""
     # redis_password: superset
     redis_cache_db: "1"
-    redis_celery_db: "0"
+    redis_celery_db: "1"
     # Or SSL port is usually 6380
     # Update following for using Redis with SSL
     redis_ssl:
@@ -299,7 +399,7 @@ supersetNode:
     db_name: superset
   env: {}
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: true
+  forceReload: false
   # -- Init containers
   # @default -- a container waiting for postgres
   initContainers:
@@ -373,23 +473,46 @@ supersetNode:
 
 # Superset Celery worker configuration
 supersetWorker:
-  replicaCount: 6
+  replicas:
+    enabled: true
+    replicaCount: 3
   autoscaling:
     enabled: true
-    minReplicas: 3
-    maxReplicas: 100
+    minReplicas: 1
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-
+  # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetWorker pods
+  podDisruptionBudget:
+    # -- Whether the pod disruption budget should be created
+    enabled: false
+    # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    minAvailable: 1
+    # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    maxUnavailable: 1
   # -- Worker startup command
   # @default -- a `celery worker` command
   command:
     - "/bin/sh"
     - "-c"
-    - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker"
-    - "apt update && apt install nano"
+    - |
+      # Install chrome webdriver
+      # See https://github.com/apache/superset/blob/4fa3b6c7185629b87c27fc2c0e5435d458f7b73d/docs/src/pages/docs/installation/email_reports.mdx
+      apt-get update
+      apt-get install -y wget
+      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
+      wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
+      apt-get install -y zip
+      unzip chromedriver_linux64.zip
+      chmod +x chromedriver
+      mv chromedriver /usr/bin
+      apt-get autoremove -yqq --purge
+      apt-get clean
+      rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
+      . {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: true
+  forceReload: false
   # -- Init container
   # @default -- a container waiting for postgres and redis
   initContainers:
@@ -449,11 +572,21 @@ supersetWorker:
   startupProbe: {}
   # -- No startup/readiness probes by default since we don't really care about its startup time (it doesn't serve traffic)
   readinessProbe: {}
+  # -- Set priorityClassName for supersetWorker pods
+  priorityClassName: ~
 
 # Superset beat configuration (to trigger scheduled jobs like reports)
 supersetCeleryBeat:
   # -- This is only required if you intend to use alerts and reports
   enabled: true
+  # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetCeleryBeat pods
+  podDisruptionBudget:
+    # -- Whether the pod disruption budget should be created
+    enabled: false
+    # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    minAvailable: 1
+    # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    maxUnavailable: 1
   # -- Command
   # @default -- a `celery beat` command
   command:
@@ -461,7 +594,7 @@ supersetCeleryBeat:
     - "-c"
     - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app beat --pidfile /tmp/celerybeat.pid --schedule /tmp/celerybeat-schedule"
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: true
+  forceReload: false
   # -- List of init containers
   # @default -- a container waiting for postgres
   initContainers:
@@ -497,13 +630,23 @@ supersetCeleryBeat:
     #  memory: 128Mi
   podSecurityContext: {}
   containerSecurityContext: {}
+  # -- Set priorityClassName for CeleryBeat pods
+  priorityClassName: ~
 
 supersetCeleryFlower:
   # -- Enables a Celery flower deployment (management UI to monitor celery jobs)
   # WARNING: on superset 1.x, this requires a Superset image that has `flower<1.0.0` installed (which is NOT the case of the default images)
   # flower>=1.0.0 requires Celery 5+ which Superset 1.5 does not support
-  enabled: true
-  replicaCount: 2
+  enabled: false
+  replicaCount: 1
+  # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetCeleryFlower pods
+  podDisruptionBudget:
+    # -- Whether the pod disruption budget should be created
+    enabled: false
+    # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    minAvailable: 1
+    # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    maxUnavailable: 1
   # -- Command
   # @default -- a `celery flower` command
   command:
@@ -580,12 +723,22 @@ supersetCeleryFlower:
     #  memory: 128Mi
   podSecurityContext: {}
   containerSecurityContext: {}
+  # -- Set priorityClassName for supersetCeleryFlower pods
+  priorityClassName: ~
 
 supersetWebsockets:
   # -- This is only required if you intend to use `GLOBAL_ASYNC_QUERIES` in `ws` mode
   # see https://github.com/apache/superset/blob/master/CONTRIBUTING.md#async-chart-queries
   enabled: false
   replicaCount: 1
+  # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetWebsockets pods
+  podDisruptionBudget:
+    # -- Whether the pod disruption budget should be created
+    enabled: false
+    # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    minAvailable: 1
+    # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
+    maxUnavailable: 1
   ingress:
     path: /ws
     pathType: Prefix
@@ -665,6 +818,8 @@ supersetWebsockets:
     failureThreshold: 3
     periodSeconds: 5
     successThreshold: 1
+  # -- Set priorityClassName for supersetWebsockets pods
+  priorityClassName: ~
 
 init:
   # Configure resources
@@ -693,7 +848,7 @@ init:
   createAdmin: true
   adminUser:
     username: sustainical
-    firstname: Sustainical
+    firstname: Superset
     lastname: Admin
     email: admin@superset.com
     password: demo
@@ -749,6 +904,8 @@ init:
   affinity: {}
   # -- TopologySpreadConstrains to be added to init job
   topologySpreadConstraints: []
+  # -- Set priorityClassName for init job pods
+  priorityClassName: ~
 
 # -- Configuration values for the postgresql dependency.
 # ref: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
@@ -789,6 +946,8 @@ postgresql:
       ## Access modes:
       accessModes:
         - ReadWriteOnce
+      capacity:
+        storage: 20Gi
     ## PostgreSQL port
     service:
       ports:
@@ -853,3 +1012,6 @@ affinity: {}
 
 # -- TopologySpreadConstrains to be added to all deployments
 topologySpreadConstraints: []
+
+# -- Set priorityClassName for superset pods
+priorityClassName: ~
