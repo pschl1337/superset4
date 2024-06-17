@@ -43,11 +43,14 @@ serviceAccount:
 # @default -- see `values.yaml`
 
 bootstrapScript: |
-  #!/bin/bash rm -rf /var/lib/apt/lists/* && \   pip install \    
-  databricks-dbapi \     pymssql==2.2.7 \     psycopg2-binary==2.9.1
-  \     mysqlclient==2.1.0 \     redis==3.5.3 && \   if [ ! -f
-  ~/bootstrap ]; then echo "Running Superset with uid {{
-  .Values.runAsUser }}" > ~/bootstrap; fi
+  #!/bin/bash 
+  rm -rf /var/lib/apt/lists/* && \   
+  pip install databricks-dbapi \
+  pymssql==2.2.7 \
+  psycopg2-binary==2.9.1 \ 
+  mysqlclient==2.1.0 \ 
+  redis==3.5.3 && \   
+  if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
 
 # -- The name of the secret which we will use to generate a superset_config.py file
 # Note: this secret must have the key superset_config.py in it and can include other files as well
