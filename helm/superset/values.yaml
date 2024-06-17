@@ -226,6 +226,31 @@ configOverrides:
       }
 
     CELERY_CONFIG = CeleryConfig
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = True
+    ENABLE_PROXY_FIX = True
+    CORS_OPTIONS = {
+      'supports_credentials': True,
+      'allow_headers': ['*'],
+      'resources': ['*'],
+      'origins': ['*']
+    }
+    FEATURE_FLAGS = {
+      "DYNAMIC_PLUGINS": True,
+      "ALERTS_ATTACH_REPORTS": True,
+      "DASHBOARD_RBAC": True,
+      "EMBEDDABLE_CHARTS": True,
+      "EMBEDDED_SUPERSET": True,
+      "ENABLE_TEMPLATE_PROCESSING": True,
+      "LISTVIEWS_DEFAULT_CARD_VIEW": True,
+      "SCHEDULED_QUERIES": True,
+      "SQL_VALIDATORS_BY_ENGINE": True,
+      "THUMBNAILS": True
+    }
+    from flask_appbuilder.security.manager import AUTH_DB
+    AUTH_TYPE = AUTH_DB
+    AUTH_ROLE_ADMIN = 'Admin'
+    AUTH_USER_REGISTRATION = False
 
 # -- Same as above but the values are files
 configOverridesFiles: {}
@@ -359,8 +384,8 @@ supersetNode:
     replicaCount: 3
   autoscaling:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 3
+    minReplicas: 2
+    maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetNode pods
@@ -478,8 +503,8 @@ supersetWorker:
     replicaCount: 3
   autoscaling:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 3
+    minReplicas: 2
+    maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetWorker pods
@@ -594,7 +619,7 @@ supersetCeleryBeat:
     - "-c"
     - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app beat --pidfile /tmp/celerybeat.pid --schedule /tmp/celerybeat-schedule"
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: false
+  forceReload: true
   # -- List of init containers
   # @default -- a container waiting for postgres
   initContainers:
@@ -637,7 +662,7 @@ supersetCeleryFlower:
   # -- Enables a Celery flower deployment (management UI to monitor celery jobs)
   # WARNING: on superset 1.x, this requires a Superset image that has `flower<1.0.0` installed (which is NOT the case of the default images)
   # flower>=1.0.0 requires Celery 5+ which Superset 1.5 does not support
-  enabled: false
+  enabled: true
   replicaCount: 1
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetCeleryFlower pods
   podDisruptionBudget:
@@ -729,7 +754,7 @@ supersetCeleryFlower:
 supersetWebsockets:
   # -- This is only required if you intend to use `GLOBAL_ASYNC_QUERIES` in `ws` mode
   # see https://github.com/apache/superset/blob/master/CONTRIBUTING.md#async-chart-queries
-  enabled: false
+  enabled: true
   replicaCount: 1
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetWebsockets pods
   podDisruptionBudget:
