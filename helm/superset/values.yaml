@@ -110,7 +110,7 @@ extraConfigs: {
   #       sqlalchemy_uri: example://example-db.local
   #       tables: []
   # -- Extra files to mount on `/app/pythonpath` as secrets
-  superset_config.py:
+  dbcon: |
     PREVENT_UNSAFE_DB_CONNECTIONS = False
 }
 extraSecrets: {}
