@@ -46,7 +46,7 @@ bootstrapScript: |
   #!/bin/bash 
   rm -rf /var/lib/apt/lists/* && \   
   pip install databricks-dbapi \
-  pymssql==2.2.7 \
+  pymssql==2.3.0 \
   psycopg2-binary==2.9.1 \ 
   mysqlclient==2.1.0 \ 
   redis==3.5.3 && \   
