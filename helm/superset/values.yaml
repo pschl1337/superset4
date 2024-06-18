@@ -186,6 +186,12 @@ configOverrides:
   #   AUTH_USER_REGISTRATION = True
   #   # The default user self registration role
   #   AUTH_USER_REGISTRATION_ROLE = "Admin"
+  FILTER_STATE_CACHE_CONFIG = {
+    'CACHE_TYPE': 'RedisCache',
+    'CACHE_DEFAULT_TIMEOUT': 86400,
+    'CACHE_KEY_PREFIX': 'superset_filter_cache',
+    'CACHE_REDIS_URL': 'redis://10.42.2.94:6379:6379/0'
+  }
   allow_sqlite_for_examples: |
     PREVENT_UNSAFE_DB_CONNECTIONS = False
   secret: |
@@ -254,6 +260,7 @@ configOverrides:
       "LISTVIEWS_DEFAULT_CARD_VIEW": True,
       "SCHEDULED_QUERIES": True,
       "SQL_VALIDATORS_BY_ENGINE": True,
+      "THUMBNAILS_SQLA_LISTENERS": True,
       "THUMBNAILS": True
     }
     from flask_appbuilder.security.manager import AUTH_DB
