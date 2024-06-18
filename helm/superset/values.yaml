@@ -336,7 +336,6 @@ ingress:
   hosts:
     - esg-cluster.labtastic.net
   tls:
-  extraHostsRaw: []
    - secretName: superset-tls
      hosts:
        - esg-cluster.labtastic.net
