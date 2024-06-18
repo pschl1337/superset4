@@ -1016,6 +1016,13 @@ redis:
       ## Access mode:
       accessModes:
         - ReadWriteOnce
+      size: 10Gi
+    volumePermissions:
+      enabled: true
+    configmap:
+      redis.conf: |-
+        appendonly yes
+        dir /data
 
 nodeSelector: {}
 
