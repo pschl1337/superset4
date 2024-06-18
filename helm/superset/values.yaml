@@ -323,23 +323,23 @@ service:
     http: nil
 
 ingress:
-  enabled: false
-  ingressClassName: ~
+  enabled: true
+  ingressClassName: nginx
   annotations: {}
     # kubernetes.io/tls-acme: "true"
     ## Extend timeout to allow long running queries.
-    # nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
-    # nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-    # nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
   path: /
   pathType: ImplementationSpecific
   hosts:
-    - chart-example.local
-  tls: []
+    - esg-cluster.labtastic.net
+  tls:
   extraHostsRaw: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+   - secretName: superset-tls
+     hosts:
+       - esg-cluster.labtastic.net
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -946,9 +946,12 @@ postgresql:
     ## Persistent Volume Storage configuration.
     ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes
     persistence:
+      volumePermissions:
+        enabled: true
       ##
       ## Enable PostgreSQL persistence using Persistent Volume Claims.
       enabled: true
+      size: 20Gi
       ##
       ## Persistent class
       storageClass: standard
@@ -1006,10 +1009,10 @@ redis:
     persistence:
       ##
       ## Use a PVC to persist data.
-      enabled: false
+      enabled: true
       ##
       ## Persistent class
-      # storageClass: classname
+      storageClass: standard
       ##
       ## Access mode:
       accessModes:
