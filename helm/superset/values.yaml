@@ -161,13 +161,12 @@ configOverrides:
   #  'CACHE_TYPE': 'SupersetMetastoreCache',
   #  'CACHE_KEY_PREFIX': 'superset_results',
   #  'CACHE_DEFAULT_TIMEOUT': 86400
-  #}
-  allow_sqlite_for_examples: |
-    PREVENT_UNSAFE_DB_CONNECTIONS = 'False'
+  #}    
   secret: |
     # Generate your own secret key for encryption. Use `openssl rand -base64 42` to generate a good key
     SECRET_KEY = 'ZPndWPS5IP+oU+uoRpGnXL1ErC5tqSJPuNTlfOPPxevcw5jYVwjwEXyH'
   my_override: |
+    PREVENT_UNSAFE_DB_CONNECTIONS = False
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = True
     ENABLE_PROXY_FIX = True
