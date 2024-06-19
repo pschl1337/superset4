@@ -463,6 +463,8 @@ supersetWorker:
       apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
       wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
       apt-get install -y zip
+      pip install geckodriver
+      export PATH=$PATH:/usr/local/lib/python3.9/site-packages
       unzip chromedriver_linux64.zip
       chmod +x chromedriver
       mv chromedriver /usr/bin
