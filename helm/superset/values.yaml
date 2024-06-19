@@ -149,7 +149,6 @@ extraSecrets: {}
 # WARNING: the order is not guaranteed
 # Files can be passed as helm --set-file configOverrides.my-override=my-file.py
 configOverrides:
-  WEBDRIVER_TYPE: "firefox"
   FILTER_STATE_CACHE_CONFIG: |
     {
       'CACHE_TYPE': 'RedisCache',
@@ -196,6 +195,7 @@ configOverrides:
     #AUTH_TYPE = AUTH_DB
     #AUTH_ROLE_ADMIN = 'Admin'
     #AUTH_USER_REGISTRATION = False
+    WEBDRIVER_TYPE = 'firefox'
 
 # -- Same as above but the values are files
 configOverridesFiles: {}
