@@ -189,6 +189,8 @@ configOverrides:
       "SCHEDULED_QUERIES": True,
       "SQL_VALIDATORS_BY_ENGINE": True,
       "THUMBNAILS_SQLA_LISTENERS": True,
+      "ENABLE_EXPLORE_DRAG_AND_DROP": True,
+      "OMNIBAR": True,
       "THUMBNAILS": True
     }
     #from flask_appbuilder.security.manager import AUTH_DB
