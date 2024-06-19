@@ -376,7 +376,7 @@ supersetNode:
     replicaCount: 3
   autoscaling:
     enabled: true
-    minReplicas: 1
+    minReplicas: 2
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
@@ -495,7 +495,7 @@ supersetWorker:
     replicaCount: 3
   autoscaling:
     enabled: true
-    minReplicas: 1
+    minReplicas: 2
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
@@ -530,7 +530,7 @@ supersetWorker:
       rm -rf geckodriver-v0.34.0-linux64.tar.gz
       apt-get install -y zip
       pip install webdrivermanager
-      pip install psycopg2 
+      pip install psycopg2 pymssql psycopg2-binary mysqlclient 
       pip install redis
       unzip chromedriver_linux64.zip
       chmod +x chromedriver
@@ -665,12 +665,12 @@ supersetCeleryFlower:
   # -- Enables a Celery flower deployment (management UI to monitor celery jobs)
   # WARNING: on superset 1.x, this requires a Superset image that has `flower<1.0.0` installed (which is NOT the case of the default images)
   # flower>=1.0.0 requires Celery 5+ which Superset 1.5 does not support
-  enabled: false
+  enabled: true
   replicaCount: 1
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetCeleryFlower pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
