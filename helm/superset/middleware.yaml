@@ -1,0 +1,30 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: traefik-cors
+  namespace: default
+spec:
+  headers:
+    accessControlAllowMethods:
+      - "GET"
+      - "OPTIONS"
+      - "PUT"
+      - "DELETE"
+      - "POST"
+    accessControlAllowHeaders:
+      - "*"
+    accessControlAllowOriginList:
+      - "*"
+    contentSecurityPolicy: |
+      default-src 'self';
+      img-src 'self' data:;
+      worker-src 'self' blob:;
+      connect-src 'self' https://api.mapbox.com https://events.mapbox.com;
+      object-src 'none';
+      style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui.css;
+      script-src 'self' 'strict-dynamic' 'nonce-Ak4I549YzUaORmzCa4hEc3LOimV8_j5w' 'unsafe-inline' http: https:;
+      base-uri 'self';
+      require-trusted-types-for 'script';
+      frame-ancestors http://localhost https://*.ngrok-free.app https://esg-cluster.labtastic.local;
+    customResponseHeaders:
+      X-Frame-Options: ""
