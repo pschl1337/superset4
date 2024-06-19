@@ -644,7 +644,7 @@ supersetCeleryFlower:
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
   # -- Command
   # @default -- a `celery flower` command
   command:
@@ -737,7 +737,7 @@ supersetWebsockets:
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
   ingress:
     path: /ws
     pathType: Prefix
