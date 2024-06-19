@@ -197,7 +197,7 @@ configOverrides:
     #AUTH_TYPE = AUTH_DB
     #AUTH_ROLE_ADMIN = 'Admin'
     #AUTH_USER_REGISTRATION = False
-    REDIS_HOST = "superset_cache"
+    REDIS_HOST = "superset_cache" 
     REDIS_PORT = "6379" 
     class CeleryConfig:
       broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
