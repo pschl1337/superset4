@@ -161,49 +161,7 @@ configOverrides:
   secret: |
     # Generate your own secret key for encryption. Use `openssl rand -base64 42` to generate a good key
     SECRET_KEY = 'ZPndWPS5IP+oU+uoRpGnXL1ErC5tqSJPuNTlfOPPxevcw5jYVwjwEXyH'
-  feature_flags: |
-    import ast
-
-    FEATURE_FLAGS = {
-        "ALERT_REPORTS": True
-    }
-  celery_conf: |
-    from celery.schedules import crontab
-
-    class CeleryConfig:
-      broker_url = f"redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/0"
-      imports = (
-          "superset.sql_lab",
-          "superset.tasks.cache",
-          "superset.tasks.scheduler",
-      )
-      result_backend = f"redis://{env('REDIS_HOST')}:{env('REDIS_PORT')}/0"
-      task_annotations = {
-          "sql_lab.get_sql_results": {
-              "rate_limit": "100/s",
-          },
-      }
-      beat_schedule = {
-          "reports.scheduler": {
-              "task": "reports.scheduler",
-              "schedule": crontab(minute="*", hour="*"),
-          },
-          "reports.prune_log": {
-              "task": "reports.prune_log",
-              'schedule': crontab(minute=0, hour=0),
-          },
-          'cache-warmup-hourly': {
-              "task": "cache-warmup",
-              "schedule": crontab(minute="*/30", hour="*"),
-              "kwargs": {
-                  "strategy_name": "top_n_dashboards",
-                  "top_n": 10,
-                  "since": "7 days ago",
-              },
-          }
-      }
-
-    CELERY_CONFIG = CeleryConfig
+  my_override: |
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = True
     ENABLE_PROXY_FIX = True
