@@ -195,7 +195,30 @@ configOverrides:
     #AUTH_TYPE = AUTH_DB
     #AUTH_ROLE_ADMIN = 'Admin'
     #AUTH_USER_REGISTRATION = False
+    
+    from selenium import webdriver
+    from selenium.webdriver.firefox.options import Options
+
+    def create_driver():
+        options = Options()
+        options.binary = "/usr/bin/firefox"  # Stellen Sie sicher, dass dieser Pfad korrekt ist
+        driver = webdriver.Firefox(options=options)
+        return driver
+
     WEBDRIVER_TYPE = 'firefox'
+    WEBDRIVER_OPTION_ARGS = [
+        '--headless',
+        '--disable-gpu',
+        '--no-sandbox',
+        '--disable-dev-shm-usage'
+    ]
+    WEBDRIVER_BASEURL = 'http://localhost:8088'
+    WEBDRIVER_BASEURL_USER_FRIENDLY = 'http://localhost:8088'
+    WEBDRIVER_CONFIGURATION = {
+        'webdriver': create_driver,
+        'type': 'firefox',
+        'args': WEBDRIVER_OPTION_ARGS,
+    }
 
 # -- Same as above but the values are files
 configOverridesFiles: {}
