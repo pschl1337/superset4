@@ -180,7 +180,6 @@ configOverrides:
     FEATURE_FLAGS = {
       "DYNAMIC_PLUGINS": True,
       "ALERTS_ATTACH_REPORTS": True,
-      "ALERT_REPORTS": True,
       "DASHBOARD_RBAC": True,
       "EMBEDDABLE_CHARTS": True,
       "EMBEDDED_SUPERSET": True,
@@ -197,6 +196,13 @@ configOverrides:
     #AUTH_TYPE = AUTH_DB
     #AUTH_ROLE_ADMIN = 'Admin'
     #AUTH_USER_REGISTRATION = False
+
+    from celery.schedules import crontab
+
+    FEATURE_FLAGS = {
+      "ALERT_REPORTS": True
+    }
+
     REDIS_HOST = "superset_cache" 
     REDIS_PORT = "6379" 
     class CeleryConfig:
