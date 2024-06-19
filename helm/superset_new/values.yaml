@@ -451,25 +451,21 @@ supersetWorker:
       # Install chrome webdriver
       # See https://github.com/apache/superset/blob/4fa3b6c7185629b87c27fc2c0e5435d458f7b73d/docs/src/pages/docs/installation/email_reports.mdx
       apt-get update
-      apt-get install -y nano
-      apt-get install -y wget
-      apt-get install xvfb firefox-esr
+      apt-get install -y nano wget xvfb firefox-esr zip
       pip install pylibmc
       wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
       apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
-      wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
+      CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
+      wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
+      unzip chromedriver_linux64.zip
+      chmod +x chromedriver
+      mv chromedriver /usr/bin
       wget https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz
       tar -xzf geckodriver-v0.34.0-linux64.tar.gz
       mv geckodriver /usr/bin
       chmod 755 /usr/bin/geckodriver
       rm -rf geckodriver-v0.34.0-linux64.tar.gz
-      apt-get install -y zip
-      pip install webdrivermanager
-      pip install psycopg2 pymssql psycopg2-binary mysqlclient 
-      pip install redis
-      unzip chromedriver_linux64.zip
-      chmod +x chromedriver
-      mv chromedriver /usr/bin
+      pip install webdrivermanager psycopg2 pymssql psycopg2-binary mysqlclient redis
       apt-get autoremove -yqq --purge
       apt-get clean
       rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
