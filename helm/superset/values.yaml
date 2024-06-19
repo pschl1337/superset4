@@ -276,13 +276,13 @@ service:
 
 ingress:
   enabled: true
-  ingressClassName: nginx
+  ingressClassName: traefik
   annotations: 
-    # kubernetes.io/tls-acme: "true"
-    ## Extend timeout to allow long running queries.
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "false"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: myresolver
+    traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myheaders@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myratelimit@kubernetescrd
   path: /
   pathType: ImplementationSpecific
   hosts:
