@@ -204,7 +204,7 @@ configOverrides:
     }
 
     REDIS_HOST = "$REDIS_HOST" 
-    REDIS_PORT = "$REDIS_PORT" 
+    REDIS_PORT = "6379" 
     class CeleryConfig:
       broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
       imports = (
