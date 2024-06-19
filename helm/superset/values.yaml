@@ -281,8 +281,8 @@ ingress:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "false"
     traefik.ingress.kubernetes.io/router.tls.certresolver: myresolver
-    traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myheaders@kubernetescrd
-    traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myratelimit@kubernetescrd
+    #traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myheaders@kubernetescrd
+    #traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myratelimit@kubernetescrd
   path: /
   pathType: ImplementationSpecific
   hosts:
