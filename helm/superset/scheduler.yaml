@@ -1,0 +1,11 @@
+apiVersion: kubescheduler.config.k8s.io/v1beta1
+kind: KubeSchedulerConfiguration
+profiles:
+- schedulerName: default-scheduler
+  plugins:
+    score:
+      enabled:
+      - name: NodeResourcesBalancedAllocation
+      - name: ImageLocality
+      disabled:
+      - name: PodTopologySpread
