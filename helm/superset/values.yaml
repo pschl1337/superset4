@@ -203,8 +203,8 @@ configOverrides:
       "ALERT_REPORTS": True
     }
 
-    REDIS_HOST = "superset_cache" 
-    REDIS_PORT = "6379" 
+    REDIS_HOST = "$REDIS_HOST" 
+    REDIS_PORT = "$REDIS_PORT" 
     class CeleryConfig:
       broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
       imports = (
