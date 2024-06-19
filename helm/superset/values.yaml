@@ -972,6 +972,11 @@ postgresql:
 # @default -- see `values.yaml`
 redis:
   enabled: true
+  auth:
+    enabled: false
+    existingSecret: ""
+    existingSecretKey: ""
+    password: superset
   architecture: standalone
   master:
     persistence:
