@@ -1,0 +1,39 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: "2024-06-19T11:48:35Z"
+    deletionGracePeriodSeconds: 0
+    deletionTimestamp: "2024-06-19T12:03:32Z"
+    finalizers:
+    - kubernetes.io/pvc-protection
+    labels:
+      app.kubernetes.io/component: primary
+      app.kubernetes.io/instance: test
+      app.kubernetes.io/name: postgresql
+    name: data-test-postgresql-0
+    namespace: esg-demo-platform-own
+    resourceVersion: "345401"
+    uid: 1f859239-5148-40b7-a4e8-ea03c3fa6eb4
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 20Gi
+    storageClassName: standard
+    volumeMode: Filesystem
+    volumeName: postgres-pv
+  status:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: 20Gi
+    phase: Bound
+kind: List
+metadata:
+  resourceVersion: ""

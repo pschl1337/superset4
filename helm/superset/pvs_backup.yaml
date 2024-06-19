@@ -1,0 +1,73 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{},"name":"redis-pv"},"spec":{"accessModes":["ReadWriteOnce"],"capacity":{"storage":"10Gi"},"hostPath":{"path":"/mnt/data/redis"},"persistentVolumeReclaimPolicy":"Retain","storageClassName":"standard"}}
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: "2024-06-19T11:49:12Z"
+    finalizers:
+    - kubernetes.io/pv-protection
+    name: redis-pv
+    resourceVersion: "344178"
+    uid: f6ce5c87-ade3-44fd-a92c-3bd367d89942
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: 10Gi
+    claimRef:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: redis-data-test-redis-master-0
+      namespace: esg-demo-platform-own
+      resourceVersion: "344056"
+      uid: ea57aea4-c02c-4834-9881-5fc6237675e1
+    hostPath:
+      path: /mnt/data/redis
+      type: ""
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: standard
+    volumeMode: Filesystem
+  status:
+    lastPhaseTransitionTime: "2024-06-19T11:49:21Z"
+    phase: Bound
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{},"name":"postgres-pv"},"spec":{"accessModes":["ReadWriteOnce"],"capacity":{"storage":"20Gi"},"hostPath":{"path":"/mnt/data/postgresql"},"persistentVolumeReclaimPolicy":"Retain","storageClassName":"standard"}}
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: "2024-06-19T11:49:17Z"
+    finalizers:
+    - kubernetes.io/pv-protection
+    name: postgres-pv
+    resourceVersion: "344182"
+    uid: 9dae2026-f74c-4a2a-9bd4-5393e2ba0066
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: 20Gi
+    claimRef:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: data-test-postgresql-0
+      namespace: esg-demo-platform-own
+      resourceVersion: "344057"
+      uid: 1f859239-5148-40b7-a4e8-ea03c3fa6eb4
+    hostPath:
+      path: /mnt/data/postgresql
+      type: ""
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: standard
+    volumeMode: Filesystem
+  status:
+    lastPhaseTransitionTime: "2024-06-19T11:49:21Z"
+    phase: Bound
+kind: List
+metadata:
+  resourceVersion: ""
