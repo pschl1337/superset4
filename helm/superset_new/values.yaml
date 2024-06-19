@@ -35,13 +35,13 @@ runAsUser: 0
 secretEnv:
   # -- Change to false in order to support externally created secret (Binami "Sealed Secrets" for Kubernetes or External Secrets Operator)
   # note: when externally creating the secret, the chart still expects to pull values from a secret with the name of the release defaults to `release-name-superset-env` - full logic located in _helpers.tpl file: `define "superset.fullname"`
-  create: true
+  create: false
 
 # -- Specify service account name to be used
 serviceAccountName: ~
 serviceAccount:
   # -- Create custom service account for Superset. If create: true and serviceAccountName is not provided, `superset.fullname` will be used.
-  create: false
+  create: true
   annotations: {}
 
 # -- Install additional packages and do any other bootstrap configuration in this script
@@ -138,11 +138,8 @@ extraVolumeMounts: []
 # -- A dictionary of overrides to append at the end of superset_config.py - the name does not matter
 # WARNING: the order is not guaranteed
 # Files can be passed as helm --set-file configOverrides.my-override=my-file.py
-configOverrides: {}
-  # extend_timeout: |
-  #    # Extend timeout to allow long running queries.
-  #    SUPERSET_WEBSERVER_TIMEOUT = ...
-  # enable_oauth: |
+configOverrides:
+   # enable_oauth: |
   #   from flask_appbuilder.security.manager import (AUTH_DB, AUTH_OAUTH)
   #   AUTH_TYPE = AUTH_OAUTH
   #   OAUTH_PROVIDERS = [
@@ -173,7 +170,104 @@ configOverrides: {}
   # secret: |
   #   # Generate your own secret key for encryption. Use `openssl rand -base64 42` to generate a good key
   #   SECRET_KEY = 'CHANGE_ME_TO_A_COMPLEX_RANDOM_SECRET'
+  FILTER_STATE_CACHE_CONFIG: |
+    {
+      'CACHE_TYPE': 'RedisCache',
+      'CACHE_DEFAULT_TIMEOUT': 86400,
+      'CACHE_KEY_PREFIX': 'superset_filter_cache',
+      'CACHE_REDIS_URL': 'redis://$REDIS_HOST:$REDIS_PORT/0'
+    }
+  #DATA_CACHE_CONFIG: |
+  #{
+  #  'CACHE_TYPE': 'SupersetMetastoreCache',
+  #  'CACHE_KEY_PREFIX': 'superset_results',
+  #  'CACHE_DEFAULT_TIMEOUT': 86400
+  #}    
+  secret: |
+    # Generate your own secret key for encryption. Use `openssl rand -base64 42` to generate a good key
+    SECRET_KEY = 'ZPndWPS5IP+oU+uoRpGnXL1ErC5tqSJPuNTlfOPPxevcw5jYVwjwEXyH'
+  my_override: |
+    PREVENT_UNSAFE_DB_CONNECTIONS = False
+    SUPERSET_FEATURE_EMBEDDED_SUPERSET = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = True
+    ENABLE_PROXY_FIX = True
+    CORS_OPTIONS = {
+      'supports_credentials': True,
+      'allow_headers': ['*'],
+      'resources': ['*'],
+      'origins': ['*']
+    }
+    FEATURE_FLAGS = {
+      "DYNAMIC_PLUGINS": True,
+      "ALERTS_ATTACH_REPORTS": True,
+      "DASHBOARD_RBAC": True,
+      "EMBEDDABLE_CHARTS": True,
+      "EMBEDDED_SUPERSET": True,
+      "ENABLE_TEMPLATE_PROCESSING": True,
+      "LISTVIEWS_DEFAULT_CARD_VIEW": True,
+      "SCHEDULED_QUERIES": True,
+      "SQL_VALIDATORS_BY_ENGINE": True,
+      "THUMBNAILS_SQLA_LISTENERS": True,
+      "ENABLE_EXPLORE_DRAG_AND_DROP": True,
+      "OMNIBAR": True,
+      "THUMBNAILS": True
+    }
+    from flask_appbuilder.security.manager import AUTH_DB
+    AUTH_TYPE = AUTH_DB
+    AUTH_ROLE_ADMIN = 'Admin'
+    AUTH_USER_REGISTRATION = False
 
+    from celery.schedules import crontab
+
+    FEATURE_FLAGS = {
+      "ALERT_REPORTS": True
+    }
+
+    REDIS_HOST = "test-redis-headless" 
+    REDIS_PORT = "6379" 
+    class CeleryConfig:
+      broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+      imports = (
+        "superset.sql_lab",
+        "superset.tasks.scheduler",
+      )
+      result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+      worker_prefetch_multiplier = 10
+      task_acks_late = True
+      task_annotations = {
+        "sql_lab.get_sql_results": {
+          "rate_limit": "100/s",
+        },
+      }
+      beat_schedule = {
+        "reports.scheduler": {
+          "task": "reports.scheduler",
+          "schedule": crontab(minute="*", hour="*"),
+        },
+        "reports.prune_log": {
+          "task": "reports.prune_log",
+          "schedule": crontab(minute=0, hour=0),
+        },
+      }
+    CELERY_CONFIG = CeleryConfig
+
+    SCREENSHOT_LOCATE_WAIT = 100
+    SCREENSHOT_LOAD_WAIT = 600
+
+    WEBDRIVER_TYPE = "chrome"
+    WEBDRIVER_OPTION_ARGS = [
+      "--force-device-scale-factor=2.0",
+      "--high-dpi-support=2.0",
+      "--headless",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-extensions",
+    ]
+    WEBDRIVER_BASEURL = 'http://superset:8088'
+    WEBDRIVER_BASEURL_USER_FRIENDLY = 'http://esg-cluster.labtastic.local:8088'
 # -- Same as above but the values are files
 configOverridesFiles: {}
   # extend_timeout: extend_timeout.py
@@ -206,18 +300,18 @@ service:
     http: nil
 
 ingress:
-  enabled: false
-  ingressClassName: ~
-  annotations: {}
-    # kubernetes.io/tls-acme: "true"
-    ## Extend timeout to allow long running queries.
-    # nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
-    # nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-    # nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+  enabled: true
+  ingressClassName: traefik
+  annotations: 
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "false"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: myresolver
+    #traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myheaders@kubernetescrd
+    #traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myratelimit@kubernetescrd
   path: /
   pathType: ImplementationSpecific
   hosts:
-    - chart-example.local
+    - esg-cluster.labtastic.local
   tls: []
   extraHostsRaw: []
   #  - secretName: chart-example-tls
@@ -249,21 +343,21 @@ hostAliases: []
 supersetNode:
   replicas:
     enabled: true
-    replicaCount: 1
+    replicaCount: 3
   autoscaling:
-    enabled: false
-    minReplicas: 1
+    enabled: true
+    minReplicas: 2
     maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
+    targetCPUUtilizationPercentage: 60
     # targetMemoryUtilizationPercentage: 80
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetNode pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
 
   # -- Startup command
   # @default -- See `values.yaml`
@@ -278,7 +372,7 @@ supersetNode:
     redis_user: ""
     # redis_password: superset
     redis_cache_db: "1"
-    redis_celery_db: "0"
+    redis_celery_db: "1"
     # Or SSL port is usually 6380
     # Update following for using Redis with SSL
     redis_ssl:
@@ -292,7 +386,7 @@ supersetNode:
     db_name: superset
   env: {}
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: false
+  forceReload: true
   # -- Init containers
   # @default -- a container waiting for postgres
   initContainers:
@@ -368,29 +462,55 @@ supersetNode:
 supersetWorker:
   replicas:
     enabled: true
-    replicaCount: 1
+    replicaCount: 3
   autoscaling:
-    enabled: false
-    minReplicas: 1
+    enabled: true
+    minReplicas: 2
     maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
+    targetCPUUtilizationPercentage: 60
     # targetMemoryUtilizationPercentage: 80
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetWorker pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
   # -- Worker startup command
   # @default -- a `celery worker` command
   command:
     - "/bin/sh"
     - "-c"
+    - |
+      # Install chrome webdriver
+      # See https://github.com/apache/superset/blob/4fa3b6c7185629b87c27fc2c0e5435d458f7b73d/docs/src/pages/docs/installation/email_reports.mdx
+      apt-get update
+      apt-get install -y nano
+      apt-get install -y wget
+      apt-get install xvfb firefox-esr
+      pip install pylibmc
+      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
+      wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
+      wget https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz
+      tar -xzf geckodriver-v0.34.0-linux64.tar.gz
+      mv geckodriver /usr/bin
+      chmod 755 /usr/bin/geckodriver
+      rm -rf geckodriver-v0.34.0-linux64.tar.gz
+      apt-get install -y zip
+      pip install webdrivermanager
+      pip install psycopg2 pymssql psycopg2-binary mysqlclient 
+      pip install redis
+      unzip chromedriver_linux64.zip
+      chmod +x chromedriver
+      mv chromedriver /usr/bin
+      apt-get autoremove -yqq --purge
+      apt-get clean
+      rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
     - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker"
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: false
+  forceReload: true
   # -- Init container
   # @default -- a container waiting for postgres and redis
   initContainers:
@@ -456,15 +576,15 @@ supersetWorker:
 # Superset beat configuration (to trigger scheduled jobs like reports)
 supersetCeleryBeat:
   # -- This is only required if you intend to use alerts and reports
-  enabled: false
+  enabled: true
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetCeleryBeat pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
   # -- Command
   # @default -- a `celery beat` command
   command:
@@ -472,7 +592,7 @@ supersetCeleryBeat:
     - "-c"
     - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app beat --pidfile /tmp/celerybeat.pid --schedule /tmp/celerybeat-schedule"
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: false
+  forceReload: true
   # -- List of init containers
   # @default -- a container waiting for postgres
   initContainers:
@@ -515,12 +635,12 @@ supersetCeleryFlower:
   # -- Enables a Celery flower deployment (management UI to monitor celery jobs)
   # WARNING: on superset 1.x, this requires a Superset image that has `flower<1.0.0` installed (which is NOT the case of the default images)
   # flower>=1.0.0 requires Celery 5+ which Superset 1.5 does not support
-  enabled: false
+  enabled: true
   replicaCount: 1
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetCeleryFlower pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
@@ -578,6 +698,7 @@ supersetCeleryFlower:
       command:
         - /bin/sh
         - -c
+        - pip install flower
         - dockerize -wait "tcp://$DB_HOST:$DB_PORT" -wait "tcp://$REDIS_HOST:$REDIS_PORT" -timeout 120s
   # -- Launch additional containers into supersetCeleryFlower pods
   extraContainers: []
@@ -722,14 +843,14 @@ init:
   jobAnnotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": "before-hook-creation"
-  loadExamples: false
+  loadExamples: true
   createAdmin: true
   adminUser:
-    username: admin
+    username: sustainical
     firstname: Superset
     lastname: Admin
     email: admin@superset.com
-    password: admin
+    password: demo
   # -- List of initContainers
   # @default -- a container waiting for postgres
   initContainers:
@@ -814,16 +935,22 @@ postgresql:
     ## Persistent Volume Storage configuration.
     ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes
     persistence:
+      volumePermissions:
+        enabled: true
       ##
       ## Enable PostgreSQL persistence using Persistent Volume Claims.
       enabled: true
+      size: 20Gi
       ##
       ## Persistent class
-      # storageClass: classname
+      storageClass: standard
+      mountPath: $HOME/postgresql
       ##
       ## Access modes:
       accessModes:
         - ReadWriteOnce
+      capacity:
+        storage: 20Gi
     ## PostgreSQL port
     service:
       ports:
@@ -871,15 +998,47 @@ redis:
     persistence:
       ##
       ## Use a PVC to persist data.
-      enabled: false
+      enabled: true
       ##
       ## Persistent class
-      # storageClass: classname
+      storageClass: standard
       ##
       ## Access mode:
       accessModes:
         - ReadWriteOnce
-
+      size: 10Gi
+      annotations: {}
+      volumePermissions:
+        enabled: true
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 1001
+          fsGroup: 1001
+    configmap:
+      redis.conf: |-
+        appendonly yes
+        dir /data
+    initContainers:
+      - name: volume-permissions
+        image: busybox
+        command: ['sh', '-c', 'chown -R 1001:1001 /data']
+        volumeMounts:
+          - name: redis-data
+            mountPath: /data
+        securityContext:
+          runAsUser: 0
+    volumeMounts:
+      - name: redis-data
+        mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: "standard"
 nodeSelector: {}
 
 tolerations: []

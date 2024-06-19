@@ -57,9 +57,7 @@ envFromSecret: '{{ template "superset.fullname" . }}-env'
 envFromSecrets: []
 
 # -- Extra environment variables that will be passed into pods
-extraEnv: {
-  SUPERSET_FEATURE_EMBEDDED_SUPERSET = True
-}
+extraEnv: {}
   # Different gunicorn settings, refer to the gunicorn documentation
   # https://docs.gunicorn.org/en/stable/settings.html#
   # These variables are used as Flags at the gunicorn startup
@@ -167,6 +165,7 @@ configOverrides:
     SECRET_KEY = 'ZPndWPS5IP+oU+uoRpGnXL1ErC5tqSJPuNTlfOPPxevcw5jYVwjwEXyH'
   my_override: |
     PREVENT_UNSAFE_DB_CONNECTIONS = False
+    SUPERSET_FEATURE_EMBEDDED_SUPERSET = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = True
     ENABLE_PROXY_FIX = True
@@ -537,7 +536,7 @@ supersetWorker:
       apt-get autoremove -yqq --purge
       apt-get clean
       rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
-      . {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker
+    - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker"
   # -- If true, forces deployment to reload on each upgrade
   forceReload: true
   # -- Init container
@@ -679,7 +678,6 @@ supersetCeleryFlower:
   command:
     - "/bin/sh"
     - "-c"
-    - "pip install flower"
     - "celery --app=superset.tasks.celery_app:app flower"
   service:
     type: LoadBalancer
@@ -728,6 +726,7 @@ supersetCeleryFlower:
       command:
         - /bin/sh
         - -c
+        - pip install flower
         - dockerize -wait "tcp://$DB_HOST:$DB_PORT" -wait "tcp://$REDIS_HOST:$REDIS_PORT" -timeout 120s
   # -- Launch additional containers into supersetCeleryFlower pods
   extraContainers: []
