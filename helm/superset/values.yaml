@@ -149,6 +149,7 @@ extraSecrets: {}
 # WARNING: the order is not guaranteed
 # Files can be passed as helm --set-file configOverrides.my-override=my-file.py
 configOverrides:
+  WEBDRIVER_TYPE: "chrome"
   FILTER_STATE_CACHE_CONFIG: |
     {
       'CACHE_TYPE': 'RedisCache',
@@ -156,6 +157,12 @@ configOverrides:
       'CACHE_KEY_PREFIX': 'superset_filter_cache',
       'CACHE_REDIS_URL': 'redis://$REDIS_HOST:$REDIS_PORT/0'
     }
+  DATA_CACHE_CONFIG: |
+  {
+    "CACHE_TYPE": "SupersetMetastoreCache",
+    "CACHE_KEY_PREFIX": "superset_results",  # make sure this string is unique to avoid collisions
+    "CACHE_DEFAULT_TIMEOUT": 86400,  # 60 seconds * 60 minutes * 24 hours
+  }
   allow_sqlite_for_examples: |
     PREVENT_UNSAFE_DB_CONNECTIONS = 'False'
   secret: |
@@ -174,6 +181,7 @@ configOverrides:
     FEATURE_FLAGS = {
       "DYNAMIC_PLUGINS": True,
       "ALERTS_ATTACH_REPORTS": True,
+      "ALERT_REPORTS": True,
       "DASHBOARD_RBAC": True,
       "EMBEDDABLE_CHARTS": True,
       "EMBEDDED_SUPERSET": True,
@@ -459,17 +467,20 @@ supersetWorker:
       apt-get update
       apt-get install -y nano
       apt-get install -y wget
+      apt-get install xvfb firefox-esr
+      pip install pylibmc
       wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
       apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
       wget https://chromedriver.storage.googleapis.com/88.0.4324.96/chromedriver_linux64.zip
       wget https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz
       tar -xzf geckodriver-v0.34.0-linux64.tar.gz
       mv geckodriver /usr/bin
+      chmod 755 /usr/bin/geckodriver
       rm -rf geckodriver-v0.34.0-linux64.tar.gz
       apt-get install -y zip
       pip install webdrivermanager
-      webdrivermanager firefox chrome --linkpath /usr/local/bin
-      export PATH=$PATH:/usr/local/lib/python3.9/site-packages
+      pip install psycop2 
+      pip install redis
       unzip chromedriver_linux64.zip
       chmod +x chromedriver
       mv chromedriver /usr/bin
@@ -548,11 +559,11 @@ supersetCeleryBeat:
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetCeleryBeat pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
   # -- Command
   # @default -- a `celery beat` command
   command:
