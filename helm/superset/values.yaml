@@ -45,13 +45,7 @@ serviceAccount:
 bootstrapScript: |
   #!/bin/bash 
   if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi && \
-  rm -rf /var/lib/apt/lists/* && \   
-  pip install --no-cache-dir databricks-dbapi \
-  pymssql==2.3.0 \
-  psycopg2-binary==2.9.1 \ 
-  mysqlclient==2.1.0 \ 
-  redis==3.5.3
-
+  
 # -- The name of the secret which we will use to generate a superset_config.py file
 # Note: this secret must have the key superset_config.py in it and can include other files as well
 configFromSecret: '{{ template "superset.fullname" . }}-config'
@@ -367,19 +361,19 @@ supersetNode:
     enabled: false
     replicaCount: 3
   autoscaling:
-    enabled: false
-    minReplicas: 2
+    enabled: true
+    minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetNode pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
 
   # -- Startup command
   # @default -- See `values.yaml`
@@ -486,19 +480,19 @@ supersetWorker:
     enabled: false
     replicaCount: 3
   autoscaling:
-    enabled: false
-    minReplicas: 3
+    enabled: true
+    minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
   # -- Sets the [pod disruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for supersetWorker pods
   podDisruptionBudget:
     # -- Whether the pod disruption budget should be created
-    enabled: false
+    enabled: true
     # -- If set, maxUnavailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
     minAvailable: 1
     # -- If set, minAvailable must not be set - see https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
-    maxUnavailable: 1
+    #maxUnavailable: 1
   # -- Worker startup command
   # @default -- a `celery worker` command
   command:
@@ -879,6 +873,9 @@ init:
   initscript: |-
     #!/bin/sh
     set -eu
+    rm -rf /var/lib/apt/lists/* && \   
+    pip install --no-cache-dir databricks-dbapi pymssql==2.3.0 psycopg2-binary==2.9.1 mysqlclient==2.1.0 redis==3.5.3
+
     echo "Upgrading DB schema..."
     superset db upgrade
     echo "Initializing roles..."
