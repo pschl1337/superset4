@@ -1,0 +1,21 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: superset-tls-ingress-route
+  namespace: esg-demo-platform-own
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`esg-cluster.labtastic.local`)
+      middlewares:
+        - name: traefik-cors
+          namespace: default
+      services:
+        - kind: Service
+          name: test-superset
+          namespace: esg-demo-platform-own
+          port: 8088
+  tls:
+    certResolver: myresolver
