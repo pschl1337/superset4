@@ -509,7 +509,7 @@ supersetWorker:
       apt-get autoremove -yqq --purge
       apt-get clean
       rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
-      . {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker
+      bash {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker
   # -- If true, forces deployment to reload on each upgrade
   forceReload: true
   # -- Init container
