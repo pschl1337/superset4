@@ -29,7 +29,7 @@ fullnameOverride: ""
 
 # -- User ID directive. This user must have enough permissions to run the bootstrap script
 # Running containers as root is not recommended in production. Change this to another UID - e.g. 1000 to be more secure
-runAsUser: 1000
+runAsUser: 0
 
 # -- Specify rather or not helm should create the secret described in `secret-env.yaml` template
 secretEnv:
@@ -466,7 +466,6 @@ supersetWorker:
       apt-get install -y zip
       pip install webdrivermanager
       pip install psycopg2 pymssql psycopg2-binary mysqlclient 
-      superset db upgrade
       pip install redis
       unzip chromedriver_linux64.zip
       chmod +x chromedriver
