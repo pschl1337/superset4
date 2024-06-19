@@ -508,7 +508,7 @@ supersetWorker:
       apt-get autoremove -yqq --purge
       apt-get clean
       rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
-    - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker"
+      . {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker
   # -- If true, forces deployment to reload on each upgrade
   forceReload: true
   # -- Init container
@@ -650,23 +650,24 @@ supersetCeleryFlower:
   command:
     - "/bin/sh"
     - "-c"
-    - "pip install flower"
-    - echo "wait 30 seconds"
-    - wait 10
-    - echo "wait 20 seconds"
-    - wait 10
-    - echo "wait 10 seconds"
-    - wait 5
-    - echo "wait 5 seconds"
-    - wait 2
-    - echo "3"
-    - wait 1
-    - echo "2"
-    - wait 1
-    - echo "1"
-    - wait 1
-    - echo "GO!!!"
-    - "celery --app=superset.tasks.celery_app:app flower"
+    - |
+      pip install flower
+      echo "wait 30 seconds"
+      wait 10
+      echo "wait 20 seconds"
+      wait 10
+      echo "wait 10 seconds"
+      wait 5
+      echo "wait 5 seconds"
+      wait 2
+      echo "3"
+      wait 1
+      echo "2"
+      wait 1
+      echo "1"
+      wait 1
+      echo "GO!!!"
+      celery --app=superset.tasks.celery_app:app flower
   service:
     type: ClusterIP
     annotations: {}
