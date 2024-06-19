@@ -8,6 +8,7 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
+  storageClassName: standard
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/data/redis
-  storageClassName: standard
