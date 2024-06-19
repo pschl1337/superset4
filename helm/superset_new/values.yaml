@@ -650,6 +650,7 @@ supersetCeleryFlower:
   command:
     - "/bin/sh"
     - "-c"
+    - 'pip install flower'
     - "celery --app=superset.tasks.celery_app:app flower"
   service:
     type: ClusterIP
@@ -698,7 +699,6 @@ supersetCeleryFlower:
       command:
         - /bin/sh
         - -c
-        - pip install flower
         - dockerize -wait "tcp://$DB_HOST:$DB_PORT" -wait "tcp://$REDIS_HOST:$REDIS_PORT" -timeout 120s
   # -- Launch additional containers into supersetCeleryFlower pods
   extraContainers: []
