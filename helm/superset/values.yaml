@@ -287,10 +287,7 @@ ingress:
   pathType: ImplementationSpecific
   hosts:
     - esg-cluster.labtastic.local
-  tls:
-   - secretName: superset-tls
-     hosts:
-       - esg-cluster.labtastic.net
+  tls: []
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
