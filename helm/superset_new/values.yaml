@@ -35,7 +35,7 @@ runAsUser: 0
 secretEnv:
   # -- Change to false in order to support externally created secret (Binami "Sealed Secrets" for Kubernetes or External Secrets Operator)
   # note: when externally creating the secret, the chart still expects to pull values from a secret with the name of the release defaults to `release-name-superset-env` - full logic located in _helpers.tpl file: `define "superset.fullname"`
-  create: false
+  create: true
 
 # -- Specify service account name to be used
 serviceAccountName: ~
