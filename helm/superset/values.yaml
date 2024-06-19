@@ -679,15 +679,16 @@ supersetCeleryFlower:
   command:
     - "/bin/sh"
     - "-c"
+    - "pip install flower"
     - "celery --app=superset.tasks.celery_app:app flower"
   service:
-    type: ClusterIP
+    type: LoadBalancer
     annotations: {}
     loadBalancerIP: ~
     port: 5555
     nodePort:
       # -- (int)
-      http: nil
+      http: 5555
   startupProbe:
     httpGet:
       path: /api/workers
