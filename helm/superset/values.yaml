@@ -286,7 +286,7 @@ ingress:
   path: /
   pathType: ImplementationSpecific
   hosts:
-    - esg-cluster.labtastic.net
+    - esg-cluster.labtastic.local
   tls:
    - secretName: superset-tls
      hosts:
