@@ -650,7 +650,7 @@ supersetCeleryFlower:
   command:
     - "/bin/sh"
     - "-c"
-    - 'pip install flower'
+    - "pip install flower"
     - "celery --app=superset.tasks.celery_app:app flower"
   service:
     type: ClusterIP
