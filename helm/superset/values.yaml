@@ -195,29 +195,50 @@ configOverrides:
     #AUTH_TYPE = AUTH_DB
     #AUTH_ROLE_ADMIN = 'Admin'
     #AUTH_USER_REGISTRATION = False
-    
-    from selenium import webdriver
-    from selenium.webdriver.firefox.options import Options
 
-    def create_driver():
-        options = Options()
-        options.binary = "/usr/bin/firefox"  # Stellen Sie sicher, dass dieser Pfad korrekt ist
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        driver = webdriver.Firefox(options=options)
-        return driver
-
-    #WEBDRIVER_BASEURL = 'http://esg-cluster.labtastic.local:8088'
-    #WEBDRIVER_BASEURL_USER_FRIENDLY = 'http://esg-cluster.labtastic.local:8088'
-    
-    WEBDRIVER_TYPE = 'firefox'
-    WEBDRIVER_CONFIGURATION = {
-        'webdriver': create_driver,
-        'type': 'firefox'
+  class CeleryConfig:
+    broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+    imports = (
+      "superset.sql_lab",
+      "superset.tasks.scheduler",
+    )
+    result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+    worker_prefetch_multiplier = 10
+    task_acks_late = True
+    task_annotations = {
+      "sql_lab.get_sql_results": {
+        "rate_limit": "100/s",
+      },
     }
+    beat_schedule = {
+      "reports.scheduler": {
+        "task": "reports.scheduler",
+        "schedule": crontab(minute="*", hour="*"),
+      },
+      "reports.prune_log": {
+        "task": "reports.prune_log",
+        "schedule": crontab(minute=0, hour=0),
+      },
+    }
+  CELERY_CONFIG = CeleryConfig
 
+  SCREENSHOT_LOCATE_WAIT = 100
+  SCREENSHOT_LOAD_WAIT = 600
+
+  WEBDRIVER_TYPE = "chrome"
+  WEBDRIVER_OPTION_ARGS = [
+    "--force-device-scale-factor=2.0",
+    "--high-dpi-support=2.0",
+    "--headless",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-extensions",
+  ]
+  WEBDRIVER_BASEURL = 'http://superset:8088'
+  WEBDRIVER_BASEURL_USER_FRIENDLY = 'http://esg-cluster.labtastic.local:8088'
+    
 # -- Same as above but the values are files
 configOverridesFiles: {}
   # extend_timeout: extend_timeout.py
@@ -842,7 +863,7 @@ init:
   jobAnnotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": "before-hook-creation"
-  loadExamples: true
+  loadExamples: false
   createAdmin: true
   adminUser:
     username: sustainical
