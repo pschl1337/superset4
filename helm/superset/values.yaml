@@ -149,7 +149,7 @@ extraSecrets: {}
 # WARNING: the order is not guaranteed
 # Files can be passed as helm --set-file configOverrides.my-override=my-file.py
 configOverrides:
-  WEBDRIVER_TYPE: "chrome"
+  WEBDRIVER_TYPE: "firefox"
   FILTER_STATE_CACHE_CONFIG: |
     {
       'CACHE_TYPE': 'RedisCache',
