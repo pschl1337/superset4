@@ -157,12 +157,12 @@ configOverrides:
       'CACHE_KEY_PREFIX': 'superset_filter_cache',
       'CACHE_REDIS_URL': 'redis://$REDIS_HOST:$REDIS_PORT/0'
     }
-  DATA_CACHE_CONFIG: |
-  {
-    'CACHE_TYPE': 'SupersetMetastoreCache',
-    'CACHE_KEY_PREFIX': 'superset_results',
-    'CACHE_DEFAULT_TIMEOUT': 86400
-  }
+  #DATA_CACHE_CONFIG: |
+  #{
+  #  'CACHE_TYPE': 'SupersetMetastoreCache',
+  #  'CACHE_KEY_PREFIX': 'superset_results',
+  #  'CACHE_DEFAULT_TIMEOUT': 86400
+  #}
   allow_sqlite_for_examples: |
     PREVENT_UNSAFE_DB_CONNECTIONS = 'False'
   secret: |
