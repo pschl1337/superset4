@@ -198,48 +198,48 @@ configOverrides:
     #AUTH_ROLE_ADMIN = 'Admin'
     #AUTH_USER_REGISTRATION = False
 
-  class CeleryConfig:
-    broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-    imports = (
-      "superset.sql_lab",
-      "superset.tasks.scheduler",
-    )
-    result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-    worker_prefetch_multiplier = 10
-    task_acks_late = True
-    task_annotations = {
-      "sql_lab.get_sql_results": {
-        "rate_limit": "100/s",
-      },
-    }
-    beat_schedule = {
-      "reports.scheduler": {
-        "task": "reports.scheduler",
-        "schedule": crontab(minute="*", hour="*"),
-      },
-      "reports.prune_log": {
-        "task": "reports.prune_log",
-        "schedule": crontab(minute=0, hour=0),
-      },
-    }
-  CELERY_CONFIG = CeleryConfig
+    class CeleryConfig:
+      broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+      imports = (
+        "superset.sql_lab",
+        "superset.tasks.scheduler",
+      )
+      result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+      worker_prefetch_multiplier = 10
+      task_acks_late = True
+      task_annotations = {
+        "sql_lab.get_sql_results": {
+          "rate_limit": "100/s",
+        },
+      }
+      beat_schedule = {
+        "reports.scheduler": {
+          "task": "reports.scheduler",
+          "schedule": crontab(minute="*", hour="*"),
+        },
+        "reports.prune_log": {
+          "task": "reports.prune_log",
+          "schedule": crontab(minute=0, hour=0),
+        },
+      }
+    CELERY_CONFIG = CeleryConfig
 
-  SCREENSHOT_LOCATE_WAIT = 100
-  SCREENSHOT_LOAD_WAIT = 600
+    SCREENSHOT_LOCATE_WAIT = 100
+    SCREENSHOT_LOAD_WAIT = 600
 
-  WEBDRIVER_TYPE = "chrome"
-  WEBDRIVER_OPTION_ARGS = [
-    "--force-device-scale-factor=2.0",
-    "--high-dpi-support=2.0",
-    "--headless",
-    "--disable-gpu",
-    "--disable-dev-shm-usage",
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-extensions",
-  ]
-  WEBDRIVER_BASEURL = 'http://superset:8088'
-  WEBDRIVER_BASEURL_USER_FRIENDLY = 'http://esg-cluster.labtastic.local:8088'
+    WEBDRIVER_TYPE = "chrome"
+    WEBDRIVER_OPTION_ARGS = [
+      "--force-device-scale-factor=2.0",
+      "--high-dpi-support=2.0",
+      "--headless",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-extensions",
+    ]
+    WEBDRIVER_BASEURL = 'http://superset:8088'
+    WEBDRIVER_BASEURL_USER_FRIENDLY = 'http://esg-cluster.labtastic.local:8088'
     
 # -- Same as above but the values are files
 configOverridesFiles: {}
