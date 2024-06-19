@@ -57,7 +57,8 @@ envFromSecret: '{{ template "superset.fullname" . }}-env'
 envFromSecrets: []
 
 # -- Extra environment variables that will be passed into pods
-extraEnv: {
+extraEnv: |
+{
   SUPERSET_FEATURE_EMBEDDED_SUPERSET: true
 }
   # Different gunicorn settings, refer to the gunicorn documentation
@@ -192,10 +193,10 @@ configOverrides:
       "OMNIBAR": True,
       "THUMBNAILS": True
     }
-    #from flask_appbuilder.security.manager import AUTH_DB
-    #AUTH_TYPE = AUTH_DB
-    #AUTH_ROLE_ADMIN = 'Admin'
-    #AUTH_USER_REGISTRATION = False
+    from flask_appbuilder.security.manager import AUTH_DB
+    AUTH_TYPE = AUTH_DB
+    AUTH_ROLE_ADMIN = 'Admin'
+    AUTH_USER_REGISTRATION = False
 
     from celery.schedules import crontab
 
