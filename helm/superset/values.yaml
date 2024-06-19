@@ -831,7 +831,6 @@ init:
   initscript: |-
     #!/bin/sh
     set -eu  
-    #pip install --no-cache-dir databricks-dbapi pymssql==2.3.0 psycopg2-binary==2.9.1 mysqlclient==2.1.0 redis==3.5.3 nano
     echo "Upgrading DB schema..."
     superset db upgrade
     echo "Initializing roles..."
