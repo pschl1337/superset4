@@ -184,10 +184,10 @@ configOverrides:
       "THUMBNAILS_SQLA_LISTENERS": True,
       "THUMBNAILS": True
     }
-    from flask_appbuilder.security.manager import AUTH_DB
-    AUTH_TYPE = AUTH_DB
-    AUTH_ROLE_ADMIN = 'Admin'
-    AUTH_USER_REGISTRATION = False
+    #from flask_appbuilder.security.manager import AUTH_DB
+    #AUTH_TYPE = AUTH_DB
+    #AUTH_ROLE_ADMIN = 'Admin'
+    #AUTH_USER_REGISTRATION = False
 
 # -- Same as above but the values are files
 configOverridesFiles: {}
@@ -460,6 +460,7 @@ supersetWorker:
       # Install chrome webdriver
       # See https://github.com/apache/superset/blob/4fa3b6c7185629b87c27fc2c0e5435d458f7b73d/docs/src/pages/docs/installation/email_reports.mdx
       apt-get update
+      apt-get install -y nano
       apt-get install -y wget
       wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
       apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
@@ -473,7 +474,7 @@ supersetWorker:
       rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
       . {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: false
+  forceReload: true
   # -- Init container
   # @default -- a container waiting for postgres and redis
   initContainers:
