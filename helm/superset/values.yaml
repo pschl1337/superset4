@@ -160,7 +160,7 @@ configOverrides:
       'CACHE_TYPE': 'RedisCache',
       'CACHE_DEFAULT_TIMEOUT': 86400,
       'CACHE_KEY_PREFIX': 'superset_filter_cache',
-      'CACHE_REDIS_URL': 'redis://10.42.2.94:6379/0'
+      'CACHE_REDIS_URL': 'redis://$REDIS_HOST:$REDIS_PORT/0'
     }
   allow_sqlite_for_examples: |
     PREVENT_UNSAFE_DB_CONNECTIONS = 'False'
@@ -971,54 +971,18 @@ postgresql:
 # More documentation can be found here: https://artifacthub.io/packages/helm/bitnami/redis
 # @default -- see `values.yaml`
 redis:
-  ##
-  ## Use the redis chart dependency.
-  ##
-  ## If you are bringing your own redis, you can set the host in supersetNode.connections.redis_host
-  ##
-  ## Set to false if bringing your own redis.
   enabled: true
-  ##
-  ## Set architecture to standalone/replication
   architecture: standalone
-  ##
-  ## Auth configuration:
-  ##
-  auth:
-    ## Enable password authentication
-    enabled: false
-    ## The name of an existing secret that contains the redis password.
-    existingSecret: ""
-    ## Name of the key containing the secret.
-    existingSecretKey: ""
-    ## Redis password
-    password: superset
-  ##
-  ## Master configuration
-  ##
   master:
-    ##
-    ## Image configuration
-    # image:
-    ##
-    ## docker registry secret names (list)
-    # pullSecrets: nil
-    ##
-    ## Configure persistance
     persistence:
-      ##
-      ## Use a PVC to persist data.
       enabled: true
-      ##
-      ## Persistent class
       storageClass: standard
-      ##
-      ## Access mode:
       accessModes:
         - ReadWriteOnce
       size: 10Gi
-    volumePermissions:
-      enabled: true
+      annotations: {}
+      volumePermissions:
+        enabled: true
     configmap:
       redis.conf: |-
         appendonly yes
