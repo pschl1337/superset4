@@ -57,9 +57,8 @@ envFromSecret: '{{ template "superset.fullname" . }}-env'
 envFromSecrets: []
 
 # -- Extra environment variables that will be passed into pods
-extraEnv: |
-{
-  SUPERSET_FEATURE_EMBEDDED_SUPERSET: true
+extraEnv: {
+  SUPERSET_FEATURE_EMBEDDED_SUPERSET = True
 }
   # Different gunicorn settings, refer to the gunicorn documentation
   # https://docs.gunicorn.org/en/stable/settings.html#
