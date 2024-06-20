@@ -480,14 +480,14 @@ supersetWorker:
       apt-get update
       apt-get install -y nano wget xvfb firefox-esr zip
       pip install pylibmc
-      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-      apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb && \
-      CHROME_VERSION=$(google-chrome --version | grep -oP '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+') && \
-      CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE_$(echo $CHROME_VERSION | cut -d'.' -f1-3)) && \
-      wget https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \  
+      wget https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.62/linux64/chrome-linux64.zip
+      unzip chrome-linux64.zip
+      chmod +x chrome-linux64/chrome 
+      ln ./chrome-linux64/chrome /usr/bin/.
+      wget https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.62/linux64/chromedriver-linux64.zip
       unzip chromedriver_linux64.zip
-      chmod +x chromedriver
-      mv chromedriver /usr/bin
+      chmod +x ./chromedriver/chromedriver
+      mv ./chromedriver/chromedriver /usr/bin
       wget https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz
       tar -xzf geckodriver-v0.34.0-linux64.tar.gz
       mv geckodriver /usr/bin
@@ -496,7 +496,7 @@ supersetWorker:
       pip install webdrivermanager psycopg2 pymssql psycopg2-binary mysqlclient redis
       apt-get autoremove -yqq --purge
       apt-get clean
-      rm -f google-chrome-stable_current_amd64.deb chromedriver_linux64.zip
+      rm -f chrome-linux64.zip chromedriver_linux64.zip
       bash {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker
   # -- If true, forces deployment to reload on each upgrade
   forceReload: true
