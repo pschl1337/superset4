@@ -5,12 +5,14 @@ metadata:
   namespace: esg-demo-platform-own
 spec:
   entryPoints:
-    - websecure
+    - web
   routes:
     - kind: Rule
       match: Host(`esg-cluster.labtastic.local`)
       middlewares:
         - name: traefik-cors
+          namespace: default
+        - name: headers
           namespace: default
       services:
         - kind: Service
