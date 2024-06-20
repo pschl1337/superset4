@@ -191,9 +191,10 @@ configOverrides:
     SUPERSET_FEATURE_EMBEDDED_SUPERSET = True
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = None
+    WTF_CSRF_EXEMPT_LIST = []
+    WTF_CSRF_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE']
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
     ENABLE_PROXY_FIX = True
     CORS_OPTIONS = {
       'supports_credentials': True,
@@ -301,12 +302,8 @@ ingress:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "false"
     traefik.ingress.kubernetes.io/router.tls.certresolver: myresolver
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    nginx.ingress.kubernetes.io/affinity: "cookie"
-    nginx.ingress.kubernetes.io/session-cookie-name: "route"
-    nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+    traefik.ingress.kubernetes.io/forward-auth-cookie: CSRF-TOKEN
+    traefik.ingress.kubernetes.io/forward-auth-header: X-CSRFToken
     #traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myheaders@kubernetescrd
     #traefik.ingress.kubernetes.io/router.middlewares: mynamespace-myratelimit@kubernetescrd
   path: /
@@ -943,6 +940,13 @@ postgresql:
 
   ## PostgreSQL Primary parameters
   primary:
+    ressources:
+      limits:
+        cpu: 2
+        memory: 2Gi 
+      requests:
+        cpu: 1
+        memory: 1Gi 
     ##
     ## Persistent Volume Storage configuration.
     ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes
@@ -952,7 +956,7 @@ postgresql:
       ##
       ## Enable PostgreSQL persistence using Persistent Volume Claims.
       enabled: true
-      size: 20Gi
+      size: 50Gi
       ##
       ## Persistent class
       storageClass: standard
@@ -962,11 +966,27 @@ postgresql:
       accessModes:
         - ReadWriteOnce
       capacity:
-        storage: 20Gi
+        storage: 30Gi
     ## PostgreSQL port
     service:
       ports:
         postgresql: "5432"
+    extendedConfiguration: |
+      max_connections = 100
+      shared_buffers = 512MB
+      effective_cache_size = 1GB
+      maintenance_work_mem = 128MB
+      checkpoint_completion_target = 0.7
+      wal_buffers = 16MB
+      default_statistics_target = 100
+      random_page_cost = 1.1
+      effective_io_concurrency = 200
+      work_mem = 4MB
+      min_wal_size = 1GB
+      max_wal_size = 2GB
+      max_worker_processes = 4
+      max_parallel_workers_per_gather = 2
+      max_parallel_workers = 4
 
 # -- Configuration values for the Redis dependency.
 # ref: https://github.com/bitnami/charts/blob/master/bitnami/redis
