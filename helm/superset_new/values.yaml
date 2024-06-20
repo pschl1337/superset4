@@ -258,7 +258,7 @@ configOverrides:
       "--disable-setuid-sandbox",
       "--disable-extensions",
     ]
-    WEBDRIVER_BASEURL = "http://superset:8088"
+    WEBDRIVER_BASEURL = "http://test-superset:8088"
     WEBDRIVER_BASEURL_USER_FRIENDLY = "http://esg-cluster.labtastic.local:8088"
 # -- Same as above but the values are files
 configOverridesFiles: {}
