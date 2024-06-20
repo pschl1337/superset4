@@ -216,6 +216,7 @@ configOverrides:
     AUTH_TYPE = AUTH_DB
     AUTH_ROLE_ADMIN = 'Admin'
     AUTH_USER_REGISTRATION = False
+    from celery.schedules import crontab
     REDIS_HOST = "test-redis-headless" 
     REDIS_PORT = "6379" 
     class CeleryConfig:
