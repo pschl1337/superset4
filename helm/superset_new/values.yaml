@@ -480,14 +480,12 @@ supersetWorker:
       apt-get update
       apt-get install -y nano wget xvfb firefox-esr zip
       pip install pylibmc
-      wget https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.62/linux64/chrome-linux64.zip
-      unzip chrome-linux64.zip
-      chmod +x chrome-linux64/chrome 
-      ln ./chrome-linux64/chrome /usr/bin/.
+      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb
       wget https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.62/linux64/chromedriver-linux64.zip
-      unzip chromedriver_linux64.zip
-      chmod +x ./chromedriver/chromedriver
-      mv ./chromedriver/chromedriver /usr/bin
+      unzip chromedriver_linux64.zip && rm -dfr chromedriver_linux64.zip
+      mv /chromedriver-linux64/chromedriver /usr/bin/chromedriver
+      chmod +x /usr/bin/chromedriver
       wget https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz
       tar -xzf geckodriver-v0.34.0-linux64.tar.gz
       mv geckodriver /usr/bin
