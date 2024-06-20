@@ -454,10 +454,10 @@ supersetNode:
 supersetWorker:
   replicas:
     enabled: true
-    replicaCount: 3
+    replicaCount: 6
   autoscaling:
     enabled: true
-    minReplicas: 2
+    minReplicas: 4
     maxReplicas: 100
     targetCPUUtilizationPercentage: 40
     # targetMemoryUtilizationPercentage: 80
